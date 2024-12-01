@@ -1,10 +1,23 @@
 mod day_1;
 mod util;
 
-fn main() {
-    let result = day_1::solve_part_1();
-    println!("result: {}", result);
+use std::io::stdin;
 
-    let result = day_1::solve_part_2();
-    println!("result: {}", result);
+fn main() {
+    println!("solve for day: ");
+    let mut buffer = String::new();
+    stdin().read_line(&mut buffer).unwrap();
+
+    let day = buffer.trim().parse().expect("type a valid number");
+
+    println!("day {day}");
+    match day {
+        1 => {
+            println!("part 1: {}", day_1::solve_part_1());
+            println!("part 2: {}", day_1::solve_part_2());
+        }
+        _ => {
+            println!("not yet solved");
+        }
+    }
 }
