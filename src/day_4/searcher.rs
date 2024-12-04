@@ -1,52 +1,5 @@
+use crate::util::{move_steps_in_direction, Direction, Position};
 use std::collections::HashMap;
-
-type Position = (isize, isize);
-
-#[derive(Debug)]
-enum Direction {
-    N,
-    NE,
-    E,
-    SE,
-    S,
-    SW,
-    W,
-    NW,
-}
-
-impl Direction {
-    pub fn all() -> [Direction; 8] {
-        [
-            Direction::N,
-            Direction::NE,
-            Direction::E,
-            Direction::SE,
-            Direction::S,
-            Direction::SW,
-            Direction::W,
-            Direction::NW,
-        ]
-    }
-
-    pub fn corner() -> [Direction; 4] {
-        [Direction::NE, Direction::SE, Direction::SW, Direction::NW]
-    }
-}
-
-impl Direction {
-    pub fn step_2d(&self) -> (isize, isize) {
-        match self {
-            Direction::N => (0, -1),
-            Direction::NE => (1, -1),
-            Direction::E => (1, 0),
-            Direction::SE => (1, 1),
-            Direction::S => (0, 1),
-            Direction::SW => (-1, 1),
-            Direction::W => (-1, 0),
-            Direction::NW => (-1, -1),
-        }
-    }
-}
 
 struct WordBounds {
     size: (isize, isize),
@@ -122,10 +75,7 @@ impl WordBounds {
 
                 match found {
                     false => None,
-                    true => {
-                        let step = direction.step_2d();
-                        Some((position.0 + steps * step.0, position.1 + steps * step.1))
-                    }
+                    true => Some(move_steps_in_direction(position, steps, direction)),
                 }
             })
             .collect()
@@ -138,7 +88,6 @@ impl WordBounds {
         direction: &Direction,
     ) -> bool {
         let word_length = word.len();
-        let step = direction.step_2d();
         let mut search_index = 0;
         let mut current_position = *position;
 
@@ -154,9 +103,7 @@ impl WordBounds {
             }
 
             search_index += 1;
-            let new_x = current_position.0 + step.0;
-            let new_y = current_position.1 + step.1;
-            current_position = (new_x, new_y);
+            current_position = move_steps_in_direction(&current_position, 1, direction);
         }
 
         false

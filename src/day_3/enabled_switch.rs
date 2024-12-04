@@ -7,28 +7,24 @@ impl EnabledSwitch {
         let enablers: &Vec<_> = &input.match_indices("do()").collect();
         let disablers: &Vec<_> = &input.match_indices("don't()").collect();
 
-        let mut ranges: Vec<(usize, &str)> = disablers
+        let mut commands: Vec<(usize, &str)> = disablers
             .into_iter()
             .chain(enablers)
             .map(|entry| *entry)
             .collect();
-        ranges.sort();
+        commands.sort();
 
-        let ranges: Vec<(usize, bool)> =
-            ranges
-                .iter()
-                .enumerate()
-                .fold(Vec::from([(0, true)]), |mut result, (_, next)| {
-                    let previous = result.get(result.len() - 1).unwrap();
-                    let current_state = previous.1;
-                    let new_state = if next.1 == "do()" { true } else { false };
+        let mut ranges: Vec<(usize, bool)> = Vec::from([(0, true)]);
 
-                    if new_state != current_state {
-                        result.push((next.0, new_state));
-                    }
+        commands.iter().enumerate().for_each(|(_, next)| {
+            let previous = ranges.get(ranges.len() - 1).unwrap();
+            let current_state = previous.1;
+            let new_state = if next.1 == "do()" { true } else { false };
 
-                    result
-                });
+            if new_state != current_state {
+                ranges.push((next.0, new_state));
+            }
+        });
 
         Self { ranges }
     }
@@ -43,16 +39,9 @@ impl EnabledSwitch {
 
 impl EnabledSwitch {
     pub fn is_index_enabled(&self, i: usize) -> bool {
-        let mut index = i;
-
-        loop {
-            let boundary = &self.ranges.iter().find(|entry| entry.0 == index);
-            if boundary.is_none() {
-                index -= 1;
-                continue;
-            }
-
-            return boundary.unwrap().1;
+        match &self.ranges.iter().rfind(|(position, _)| position < &i) {
+            None => return true,
+            Some((_, enabled)) => *enabled,
         }
     }
 }

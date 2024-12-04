@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
 
 pub struct CompareList {
     lhs: Vec<u32>,
@@ -10,24 +10,18 @@ impl CompareList {
         let mut lhs = Vec::new();
         let mut rhs = Vec::new();
 
-        let mut pointer: usize = 0;
-
         input.lines().for_each(|line| {
-            let components = line.split(" ");
-            components.for_each(|entry| {
+            line.split(" ").for_each(|entry| {
                 if entry.is_empty() {
                     return;
                 }
 
                 let number = entry.parse().unwrap();
 
-                if pointer == 0 {
-                    lhs.push(number);
-                } else {
-                    rhs.push(number);
+                match lhs.len() == rhs.len() {
+                    true => lhs.push(number),
+                    false => rhs.push(number),
                 }
-
-                pointer = if pointer == 0 { 1 } else { 0 };
             });
         });
 
@@ -40,10 +34,16 @@ impl CompareList {
 
 impl CompareList {
     pub fn find_difference(&self) -> u32 {
-        sort_list_asc(&mut self.lhs.clone())
+        let mut lhs_sorted = self.lhs.clone();
+        let mut rhs_sorted = self.rhs.clone();
+
+        lhs_sorted.sort_by(sort_asc);
+        rhs_sorted.sort_by(sort_asc);
+
+        lhs_sorted
             .iter()
-            .zip(sort_list_asc(&mut self.rhs.clone()).iter())
-            .fold(0, |result, (a, b)| result + (a).abs_diff(*b))
+            .zip(rhs_sorted)
+            .fold(0, |result, (a, b)| result + (a).abs_diff(b))
     }
 
     pub fn find_similarity(&self) -> u32 {
@@ -62,8 +62,6 @@ impl CompareList {
     }
 }
 
-fn sort_list_asc(list: &mut [u32]) -> &[u32] {
-    list.sort_by(|a, b| a.cmp(b));
-
-    list
+fn sort_asc(a: &u32, b: &u32) -> Ordering {
+    a.cmp(&b)
 }
