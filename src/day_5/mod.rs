@@ -43,13 +43,15 @@ fn correct_page_ordering(input: String) -> u32 {
 
     print_text
         .lines()
-        .filter_map(|line| {
+        .map(|line| {
             let print_order: Vec<u32> = text_to_numbers(line);
 
-            match rules.is_correct_order(&print_order) {
-                true => Some(print_order[find_middle_index(print_order.len())]),
-                false => None,
+            if rules.is_correct_order(&print_order) {
+                return 0;
             }
+
+            let print_order = rules.order_correctly(&print_order);
+            print_order[find_middle_index(print_order.len())]
         })
         .sum()
 }

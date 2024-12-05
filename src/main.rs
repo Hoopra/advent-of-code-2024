@@ -34,7 +34,7 @@ fn main() {
         }
         5 => {
             println!("part 1: {}", day_5::solve_part_1());
-            // println!("part 2: {}", day_5::solve_part_2());
+            println!("part 2: {}", day_5::solve_part_2());
         }
         _ => {
             println!("not yet solved");
