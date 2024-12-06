@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Direction {
     N,
     NE,
@@ -40,6 +40,19 @@ impl Direction {
             Direction::SW => (-1, 1),
             Direction::W => (-1, 0),
             Direction::NW => (-1, -1),
+        }
+    }
+
+    pub fn rotate_90_degress_clockwise(&self) -> Direction {
+        match self {
+            Direction::N => Direction::E,
+            Direction::NE => Direction::SE,
+            Direction::E => Direction::S,
+            Direction::SE => Direction::SW,
+            Direction::S => Direction::W,
+            Direction::SW => Direction::NW,
+            Direction::W => Direction::N,
+            Direction::NW => Direction::NE,
         }
     }
 }
