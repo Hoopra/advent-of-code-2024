@@ -92,6 +92,76 @@ impl Memory {
         }
     }
 
+    fn find_continuous_space(&self, length: usize) -> Option<usize> {
+        if length == 1 {
+            return Some(0);
+        }
+
+        let mut matched: usize = 1;
+
+        let total = self.empty.len();
+        for index in 0..total {
+            let start = self.empty.get(index).unwrap();
+
+            for next_index in 1..length {
+                let next = self.empty.get(index + next_index);
+                if next.is_none() {
+                    matched = 1;
+                    break;
+                }
+
+                match next {
+                    Some(next) if next == &(start + next_index) => {
+                        matched += 1;
+
+                        if matched == length {
+                            return Some(index);
+                        }
+                    }
+                    _ => {
+                        matched = 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    pub fn order_whole_files(&mut self) {
+        while let Some(next) = self.unordered.pop() {
+            let length = next.length;
+
+            let index = self.find_continuous_space(length);
+            if index.is_none() {
+                self.ordered.push(next);
+                continue;
+            }
+
+            let index = index.unwrap();
+            println!("for id {} (l = {}) index {}", next.id, length, index,);
+
+            let mut empty: Vec<usize> = self.empty.clone();
+
+            let new_indices: Vec<usize> =
+                empty.clone().into_iter().skip(index).take(length).collect();
+
+            empty.append(&mut next.indices.clone());
+            empty.sort();
+
+            println!("new_indices {:?}", new_indices);
+
+            self.empty = empty
+                .into_iter()
+                .filter(|index| !new_indices.contains(index))
+                .collect();
+
+            self.ordered
+                .push(MemoryEntry::new(next.id, length, new_indices));
+        }
+    }
+
     pub fn checksum(&self) -> usize {
         self.ordered.iter().map(|entry| entry.checksum()).sum()
     }
@@ -150,5 +220,58 @@ mod tests {
             memory.empty,
             Vec::from([28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41])
         );
+    }
+
+    #[test]
+    fn finds_continuous_space_with_length() {
+        let memory = Memory::from_string("2333133121414131402");
+
+        let result = memory.find_continuous_space(3);
+        assert_eq!(result, Some(0));
+
+        let memory = Memory::from_string("12345");
+
+        let result = memory.find_continuous_space(3);
+        assert_eq!(result, Some(2));
+
+        let result = memory.find_continuous_space(4);
+        assert_eq!(result, Some(2));
+
+        let result = memory.find_continuous_space(5);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn sorts_memory_by_whole_files() {
+        let input = "2333133121414131402";
+        let mut memory = Memory::from_string(input);
+
+        memory.order_whole_files();
+
+        println!("ordered: {:?}", memory.ordered);
+
+        assert_eq!(
+            memory.empty,
+            Vec::from([11, 14, 18, 19, 20, 21, 26, 31, 32, 33, 34, 35])
+        );
+
+        // [
+        // MemoryEntry { id: 0, length: 2, indices: [0, 1] }
+        // MemoryEntry { id: 9, length: 2, indices: [2, 3] },
+        // MemoryEntry { id: 2, length: 1, indices: [4] },
+        // MemoryEntry { id: 1, length: 3, indices: [7, 11, 14] },
+        // MemoryEntry { id: 8, length: 4, indices: [36, 37, 38, 39] },
+        // MemoryEntry { id: 7, length: 3, indices: [8, 9, 10] },
+        // MemoryEntry { id: 6, length: 4, indices: [27, 28, 29, 30] },
+        // MemoryEntry { id: 5, length: 4, indices: [23, 24, 25, 26] },
+        // MemoryEntry { id: 4, length: 2, indices: [12, 13] },
+        // MemoryEntry { id: 3, length: 3, indices: [15, 16, 17] },
+        // ]
+
+        // 00...111...2...333.44.5555.6666.777.888899
+        // 0099.111...2...333.44.5555.6666.777.8888..
+        // 0099.1117772...333.44.5555.6666.....8888..
+        // 0099.111777244.333....5555.6666.....8888..
+        // 00992111777.44.333....5555.6666.....8888..
     }
 }
