@@ -6,26 +6,28 @@ use memory::Memory;
 fn order_memory_checksum(input: &str) -> usize {
     let mut memory = Memory::from_string(input);
 
-    memory.order();
+    memory.order(false);
     memory.checksum()
 }
 
 pub fn solve_part_1() -> usize {
     let input = read_input("src/day_9/input.txt");
 
+    // TODO: optimise
     order_memory_checksum(&input)
 }
 
 fn whole_file_order_memory_checksum(input: &str) -> usize {
     let mut memory = Memory::from_string(input);
 
-    memory.order_whole_files();
+    memory.order(true);
     memory.checksum()
 }
 
 pub fn solve_part_2() -> usize {
     let input = read_input("src/day_9/input.txt");
 
+    // TODO: optimise
     whole_file_order_memory_checksum(&input)
 }
 

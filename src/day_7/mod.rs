@@ -39,7 +39,7 @@ pub fn solve_part_1() -> u64 {
 pub fn solve_part_2() -> u64 {
     let input = read_input("src/day_7/input.txt");
 
-    // TODO: optimise - very slow
+    // TODO: optimise
     let available = part_2_operations();
     sum_possible_equations(&input, &available)
 }

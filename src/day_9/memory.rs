@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct MemoryEntry {
     pub id: usize,
@@ -39,10 +41,17 @@ impl MemorySlotType {
 pub struct Memory {
     unordered: Vec<MemoryEntry>,
     ordered: Vec<MemoryEntry>,
-    empty: Vec<usize>,
+    empty: HashMap<usize, ()>,
 }
 
 impl Memory {
+    pub fn empty_keys(&self) -> Vec<&usize> {
+        let mut keys: Vec<&usize> = self.empty.keys().into_iter().collect();
+        keys.sort();
+
+        keys
+    }
+
     pub fn from_string(input: &str) -> Self {
         let mut memory = Memory::default();
 
@@ -53,7 +62,7 @@ impl Memory {
         input.chars().for_each(|entry: char| {
             let length = entry.to_digit(10).unwrap() as usize;
 
-            let mut indices: Vec<usize> = (index..(index + length)).collect();
+            let indices: Vec<usize> = (index..(index + length)).collect();
 
             match block_type {
                 MemorySlotType::Data => {
@@ -63,7 +72,9 @@ impl Memory {
                     id += 1;
                 }
                 MemorySlotType::Empty => {
-                    memory.empty.append(&mut indices);
+                    for index in indices {
+                        memory.empty.insert(index, ());
+                    }
                 }
             }
 
@@ -76,95 +87,84 @@ impl Memory {
 }
 
 impl Memory {
-    pub fn order(&mut self) {
-        while let Some(next) = self.unordered.pop() {
-            let length = next.length;
-
-            let mut empty: Vec<usize> = self.empty.clone();
-            empty.append(&mut next.indices.clone());
-            empty.sort();
-
-            let new_indices = empty.clone().into_iter().take(length).collect();
-            self.empty = empty.into_iter().skip(length).collect();
-
-            self.ordered
-                .push(MemoryEntry::new(next.id, length, new_indices));
+    fn add_empty_indices(&mut self, indices: &Vec<usize>) {
+        for index in indices {
+            self.empty.insert(*index, ());
         }
     }
 
-    fn find_continuous_space(&self, length: usize) -> Option<usize> {
-        if length == 1 {
-            return Some(0);
+    fn remove_empty_indices(&mut self, indices: &Vec<usize>) {
+        for index in indices {
+            self.empty.remove(&index);
         }
+    }
 
-        let mut matched: usize = 1;
+    fn find_empty_indices(&self, length: usize, continuous: bool) -> Option<Vec<usize>> {
+        let mut result = Vec::new();
 
-        let total = self.empty.len();
-        for index in 0..total {
-            let start = self.empty.get(index).unwrap();
+        let keys = self.empty_keys();
 
-            for next_index in 1..length {
-                let next = self.empty.get(index + next_index);
-                if next.is_none() {
-                    matched = 1;
-                    break;
-                }
+        for key in keys.iter() {
+            result.push(**key);
 
-                match next {
-                    Some(next) if next == &(start + next_index) => {
-                        matched += 1;
+            if continuous && !is_continuous(&result) {
+                result.clear();
+                result.push(**key);
+                continue;
+            }
 
-                        if matched == length {
-                            return Some(index);
-                        }
-                    }
-                    _ => {
-                        matched = 1;
-                        break;
-                    }
-                }
+            if result.len() == length {
+                return Some(result);
             }
         }
 
         None
     }
 
-    pub fn order_whole_files(&mut self) {
+    pub fn order(&mut self, continuous: bool) {
         while let Some(next) = self.unordered.pop() {
             let length = next.length;
 
-            let index = self.find_continuous_space(length);
-            if index.is_none() {
-                self.ordered.push(next);
-                continue;
+            if !continuous {
+                self.add_empty_indices(&next.indices);
             }
 
-            let index = index.unwrap();
-            println!("for id {} (l = {}) index {}", next.id, length, index,);
+            let new_indices = self.find_empty_indices(length, continuous);
+            let first_index = next.indices.first().unwrap();
 
-            let mut empty: Vec<usize> = self.empty.clone();
+            match new_indices {
+                Some(indices) if indices.first().unwrap() <= first_index => {
+                    self.remove_empty_indices(&indices);
 
-            let new_indices: Vec<usize> =
-                empty.clone().into_iter().skip(index).take(length).collect();
+                    if continuous {
+                        self.add_empty_indices(&next.indices);
+                    }
 
-            empty.append(&mut next.indices.clone());
-            empty.sort();
-
-            println!("new_indices {:?}", new_indices);
-
-            self.empty = empty
-                .into_iter()
-                .filter(|index| !new_indices.contains(index))
-                .collect();
-
-            self.ordered
-                .push(MemoryEntry::new(next.id, length, new_indices));
+                    let entry = MemoryEntry::new(next.id, length, indices);
+                    self.ordered.push(entry);
+                }
+                _ => self.ordered.push(next),
+            }
         }
     }
 
     pub fn checksum(&self) -> usize {
         self.ordered.iter().map(|entry| entry.checksum()).sum()
     }
+}
+
+fn is_continuous(array: &Vec<usize>) -> bool {
+    if array.len() <= 1 {
+        return true;
+    }
+
+    let first = array.first().unwrap();
+
+    array
+        .iter()
+        .skip(1)
+        .enumerate()
+        .all(|(index, entry)| entry == &(index + first + 1))
 }
 
 #[cfg(test)]
@@ -176,7 +176,10 @@ mod tests {
         let input = "12345";
         let memory = Memory::from_string(input);
 
-        assert_eq!(memory.empty, Vec::from([1, 2, 6, 7, 8, 9]));
+        assert_eq!(
+            memory.empty,
+            HashMap::from([(1, ()), (2, ()), (6, ()), (7, ()), (8, ()), (9, ())])
+        );
         assert_eq!(memory.ordered, Vec::from([]));
         assert_eq!(
             memory.unordered,
@@ -204,9 +207,12 @@ mod tests {
     fn sorts_memory() {
         let input = "12345";
         let mut memory = Memory::from_string(input);
-        memory.order();
+        memory.order(false);
 
-        assert_eq!(memory.empty, Vec::from([9, 10, 11, 12, 13, 14]));
+        assert_eq!(
+            memory.empty_keys(),
+            Vec::from([&9, &10, &11, &12, &13, &14])
+        );
     }
 
     #[test]
@@ -214,11 +220,11 @@ mod tests {
         let input = "2333133121414131402";
         let mut memory = Memory::from_string(input);
 
-        memory.order();
+        memory.order(false);
 
         assert_eq!(
-            memory.empty,
-            Vec::from([28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41])
+            memory.empty_keys(),
+            Vec::from([&28, &29, &30, &31, &32, &33, &34, &35, &36, &37, &38, &39, &40, &41])
         );
     }
 
@@ -226,18 +232,18 @@ mod tests {
     fn finds_continuous_space_with_length() {
         let memory = Memory::from_string("2333133121414131402");
 
-        let result = memory.find_continuous_space(3);
-        assert_eq!(result, Some(0));
+        let result = memory.find_empty_indices(3, true);
+        assert_eq!(result, Some(Vec::from([2, 3, 4])));
 
         let memory = Memory::from_string("12345");
 
-        let result = memory.find_continuous_space(3);
-        assert_eq!(result, Some(2));
+        let result = memory.find_empty_indices(3, true);
+        assert_eq!(result, Some(Vec::from([6, 7, 8])));
 
-        let result = memory.find_continuous_space(4);
-        assert_eq!(result, Some(2));
+        let result = memory.find_empty_indices(4, true);
+        assert_eq!(result, Some(Vec::from([6, 7, 8, 9])));
 
-        let result = memory.find_continuous_space(5);
+        let result = memory.find_empty_indices(5, true);
         assert_eq!(result, None);
     }
 
@@ -246,32 +252,11 @@ mod tests {
         let input = "2333133121414131402";
         let mut memory = Memory::from_string(input);
 
-        memory.order_whole_files();
-
-        println!("ordered: {:?}", memory.ordered);
+        memory.order(true);
 
         assert_eq!(
-            memory.empty,
-            Vec::from([11, 14, 18, 19, 20, 21, 26, 31, 32, 33, 34, 35])
+            memory.empty_keys(),
+            Vec::from([&11, &14, &18, &19, &20, &21, &26, &31, &32, &33, &34, &35, &40, &41])
         );
-
-        // [
-        // MemoryEntry { id: 0, length: 2, indices: [0, 1] }
-        // MemoryEntry { id: 9, length: 2, indices: [2, 3] },
-        // MemoryEntry { id: 2, length: 1, indices: [4] },
-        // MemoryEntry { id: 1, length: 3, indices: [7, 11, 14] },
-        // MemoryEntry { id: 8, length: 4, indices: [36, 37, 38, 39] },
-        // MemoryEntry { id: 7, length: 3, indices: [8, 9, 10] },
-        // MemoryEntry { id: 6, length: 4, indices: [27, 28, 29, 30] },
-        // MemoryEntry { id: 5, length: 4, indices: [23, 24, 25, 26] },
-        // MemoryEntry { id: 4, length: 2, indices: [12, 13] },
-        // MemoryEntry { id: 3, length: 3, indices: [15, 16, 17] },
-        // ]
-
-        // 00...111...2...333.44.5555.6666.777.888899
-        // 0099.111...2...333.44.5555.6666.777.8888..
-        // 0099.1117772...333.44.5555.6666.....8888..
-        // 0099.111777244.333....5555.6666.....8888..
-        // 00992111777.44.333....5555.6666.....8888..
     }
 }

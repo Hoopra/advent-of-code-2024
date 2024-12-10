@@ -53,8 +53,13 @@ fn main() {
             println!("part 2: {}", day_8::solve_part_2());
         }
         9 => {
-            println!("part 1: {}", day_9::solve_part_1());
-            println!("part 2: {}", day_9::solve_part_2());
+            let result = day_9::solve_part_1();
+            assert_eq!(result, 6242766523059);
+            println!("part 1: {}", result);
+
+            let result = day_9::solve_part_2();
+            assert_eq!(result, 6272188244509);
+            println!("part 2: {}", result);
         }
         _ => {
             println!("not yet solved");

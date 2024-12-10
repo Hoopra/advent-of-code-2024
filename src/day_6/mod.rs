@@ -27,7 +27,7 @@ pub fn solve_part_1() -> usize {
 pub fn solve_part_2() -> usize {
     let input = read_input("src/day_6/input.txt");
 
-    // TODO: optimise - takes a long time to complete
+    // TODO: optimise
     count_obstacles_for_loop(&input)
 }
 
