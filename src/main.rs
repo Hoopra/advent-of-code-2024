@@ -7,6 +7,7 @@ mod day_06;
 mod day_07;
 mod day_08;
 mod day_09;
+mod day_10;
 mod util;
 
 use std::io::stdin;
@@ -60,6 +61,10 @@ fn main() {
             let result = day_09::solve_part_2();
             assert_eq!(result, 6272188244509);
             println!("part 2: {}", result);
+        }
+        10 => {
+            println!("part 1: {}", day_10::solve_part_1());
+            println!("part 2: {}", day_10::solve_part_2());
         }
         _ => {
             println!("not yet solved");
