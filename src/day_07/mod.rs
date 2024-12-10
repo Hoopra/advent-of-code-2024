@@ -30,14 +30,14 @@ fn sum_possible_equations(input: &str, available_operators: &Vec<Operator>) -> u
 }
 
 pub fn solve_part_1() -> u64 {
-    let input = read_input("src/day_7/input.txt");
+    let input = read_input("src/day_07/input.txt");
 
     let available = part_1_operations();
     sum_possible_equations(&input, &available)
 }
 
 pub fn solve_part_2() -> u64 {
-    let input = read_input("src/day_7/input.txt");
+    let input = read_input("src/day_07/input.txt");
 
     // TODO: optimise
     let available = part_2_operations();

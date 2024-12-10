@@ -11,7 +11,7 @@ fn order_memory_checksum(input: &str) -> usize {
 }
 
 pub fn solve_part_1() -> usize {
-    let input = read_input("src/day_9/input.txt");
+    let input = read_input("src/day_09/input.txt");
 
     // TODO: optimise
     order_memory_checksum(&input)
@@ -25,7 +25,7 @@ fn whole_file_order_memory_checksum(input: &str) -> usize {
 }
 
 pub fn solve_part_2() -> usize {
-    let input = read_input("src/day_9/input.txt");
+    let input = read_input("src/day_09/input.txt");
 
     // TODO: optimise
     whole_file_order_memory_checksum(&input)

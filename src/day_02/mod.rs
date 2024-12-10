@@ -9,7 +9,7 @@ fn find_safe_reports(input: String) -> usize {
 }
 
 pub fn solve_part_1() -> usize {
-    let input = read_input("src/day_2/input.txt");
+    let input = read_input("src/day_02/input.txt");
 
     find_safe_reports(input)
 }
@@ -23,7 +23,7 @@ fn find_safe_reports_with_dampener(input: String) -> usize {
 }
 
 pub fn solve_part_2() -> usize {
-    let input = read_input("src/day_2/input.txt");
+    let input = read_input("src/day_02/input.txt");
 
     find_safe_reports_with_dampener(input)
 }

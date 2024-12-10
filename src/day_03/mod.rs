@@ -41,13 +41,13 @@ fn perform_enabled_multiplications(input: String) -> i64 {
 }
 
 pub fn solve_part_1() -> i64 {
-    let input = read_input("src/day_3/input.txt");
+    let input = read_input("src/day_03/input.txt");
 
     perform_multiplications(input)
 }
 
 pub fn solve_part_2() -> i64 {
-    let input = read_input("src/day_3/input.txt");
+    let input = read_input("src/day_03/input.txt");
 
     perform_enabled_multiplications(input)
 }

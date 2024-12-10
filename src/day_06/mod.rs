@@ -19,13 +19,13 @@ fn count_obstacles_for_loop(input: &str) -> usize {
 }
 
 pub fn solve_part_1() -> usize {
-    let input = read_input("src/day_6/input.txt");
+    let input = read_input("src/day_06/input.txt");
 
     count_guard_steps(&input)
 }
 
 pub fn solve_part_2() -> usize {
-    let input = read_input("src/day_6/input.txt");
+    let input = read_input("src/day_06/input.txt");
 
     // TODO: optimise
     count_obstacles_for_loop(&input)

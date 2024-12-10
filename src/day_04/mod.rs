@@ -7,7 +7,7 @@ fn find_xmas(input: String) -> u32 {
 }
 
 pub fn solve_part_1() -> u32 {
-    let input = read_input("src/day_4/input.txt");
+    let input = read_input("src/day_04/input.txt");
 
     find_xmas(input)
 }
@@ -17,7 +17,7 @@ fn find_cross_mas(input: String) -> u32 {
 }
 
 pub fn solve_part_2() -> u32 {
-    let input = read_input("src/day_4/input.txt");
+    let input = read_input("src/day_04/input.txt");
 
     find_cross_mas(input)
 }

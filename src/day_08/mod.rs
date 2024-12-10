@@ -10,7 +10,7 @@ fn count_antinodes(input: &str) -> usize {
 }
 
 pub fn solve_part_1() -> usize {
-    let input = read_input("src/day_8/input.txt");
+    let input = read_input("src/day_08/input.txt");
 
     count_antinodes(&input)
 }
@@ -22,7 +22,7 @@ fn count_antinodes_with_resonance(input: &str) -> usize {
 }
 
 pub fn solve_part_2() -> usize {
-    let input = read_input("src/day_8/input.txt");
+    let input = read_input("src/day_08/input.txt");
 
     count_antinodes_with_resonance(&input)
 }

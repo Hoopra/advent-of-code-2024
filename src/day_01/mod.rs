@@ -10,7 +10,7 @@ fn list_difference_from_input(input: String) -> u32 {
 }
 
 pub fn solve_part_1() -> u32 {
-    let input = read_input("src/day_1/input.txt");
+    let input = read_input("src/day_01/input.txt");
 
     list_difference_from_input(input)
 }
@@ -22,7 +22,7 @@ fn list_similarity_from_input(input: String) -> u32 {
 }
 
 pub fn solve_part_2() -> u32 {
-    let input = read_input("src/day_1/input.txt");
+    let input = read_input("src/day_01/input.txt");
 
     list_similarity_from_input(input)
 }

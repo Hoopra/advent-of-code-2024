@@ -57,13 +57,13 @@ fn correct_page_ordering(input: String) -> u32 {
 }
 
 pub fn solve_part_1() -> u32 {
-    let input = read_input("src/day_5/input.txt");
+    let input = read_input("src/day_05/input.txt");
 
     verify_page_ordering(input)
 }
 
 pub fn solve_part_2() -> u32 {
-    let input = read_input("src/day_5/input.txt");
+    let input = read_input("src/day_05/input.txt");
 
     correct_page_ordering(input)
 }
