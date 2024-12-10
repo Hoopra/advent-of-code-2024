@@ -114,6 +114,13 @@ impl HeightMap {
             })
             .collect()
     }
+
+    pub fn find_trailhead_trails(&self) -> HashMap<Position, usize> {
+        self.zero_elevations
+            .iter()
+            .map(|position| (*position, self.trails_from_position(position).len()))
+            .collect()
+    }
 }
 
 #[cfg(test)]
