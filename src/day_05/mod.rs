@@ -2,11 +2,7 @@ mod ordering;
 
 use ordering::PageOrderingRules;
 
-use crate::util::read_input;
-
-fn find_middle_index(length: usize) -> usize {
-    (0.5 * length as f64).floor() as usize
-}
+use crate::util::{divide_integer, read_input};
 
 fn text_to_numbers(text: &str) -> Vec<u32> {
     text.split(",")
@@ -27,7 +23,7 @@ fn verify_page_ordering(input: String) -> u32 {
             let print_order: Vec<u32> = text_to_numbers(line);
 
             match rules.is_correct_order(&print_order) {
-                true => Some(print_order[find_middle_index(print_order.len())]),
+                true => Some(print_order[divide_integer(print_order.len(), 2.0)]),
                 false => None,
             }
         })
@@ -51,7 +47,7 @@ fn correct_page_ordering(input: String) -> u32 {
             }
 
             let print_order = rules.order_correctly(&print_order);
-            print_order[find_middle_index(print_order.len())]
+            print_order[divide_integer(print_order.len(), 2.0)]
         })
         .sum()
 }
