@@ -1,50 +1,66 @@
 use crate::util::divide_integer;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Stone {
-    number: u64,
+enum Number {
+    Zero,
+    One,
+    Value(u64, usize),
 }
 
-impl Stone {
+impl Number {
     pub fn from_string(input: &str) -> Self {
-        Self {
-            number: input.parse().unwrap(),
+        match input.parse().unwrap() {
+            0 => Number::Zero,
+            1 => Number::One,
+            value => Number::Value(value, input.len()),
         }
     }
 
-    pub fn new(number: u64) -> Self {
-        Self { number }
+    pub fn from_value(value: u64, digits: Option<usize>) -> Self {
+        match value {
+            0 => Self::Zero,
+            1 => Self::One,
+            _ => {
+                let digits = digits.unwrap_or(value.to_string().len());
+                Self::Value(value, digits)
+            }
+        }
     }
 }
 
-impl Stone {
-    fn attempt_split(self) -> Vec<Self> {
-        let digits_string = self.number.to_string();
-        let length = digits_string.len();
+fn split_number_by_digits(value: u64, digits: usize) -> Vec<Number> {
+    if digits % 2 == 0 {
+        let half = divide_integer(digits as usize, 2.0);
+        let digits_string = value.to_string();
 
-        if length % 2 == 1 {
-            return vec![Self::new(self.number * 2024)];
-        }
+        let first = take_digits(&digits_string, 0, half);
+        let second = take_digits(&digits_string, half, half);
 
-        let each_length = divide_integer(length, 2.0);
-        let first = take_digits(&digits_string, 0, each_length);
-        let second = take_digits(&digits_string, each_length, each_length);
-
-        vec![Self::new(first), Self::new(second)]
+        return vec![
+            Number::from_value(first, None),
+            Number::from_value(second, None),
+        ];
     }
 
+    // let multiplier = 4;
+    // let result = ((digits as f64).log10() + (4.0_f64).log10()).floor() + 1.0;
+
+    vec![Number::from_value(value * 2024, None)]
+}
+
+impl Number {
     pub fn blink(self) -> Vec<Self> {
         let mut result = Vec::new();
 
-        match self.number {
-            0 => result.push(Self::new(1)),
-            _ => result.extend(self.attempt_split()),
+        match self {
+            Number::Zero => result.push(Number::One),
+            Number::One => result.push(Number::Value(2024, 4)),
+            Number::Value(value, digits) => result.extend(split_number_by_digits(value, digits)),
         }
 
         result
     }
 }
-
 fn take_digits(digits: &str, skip: usize, take: usize) -> u64 {
     digits
         .chars()
@@ -56,7 +72,7 @@ fn take_digits(digits: &str, skip: usize, take: usize) -> u64 {
 }
 
 pub struct StoneCollection {
-    stones: Vec<Stone>,
+    stones: Vec<Number>,
 }
 
 impl StoneCollection {
@@ -64,13 +80,13 @@ impl StoneCollection {
         let stones = input
             .split(" ")
             .into_iter()
-            .map(|digits| Stone::from_string(digits))
+            .map(|digits| Number::from_string(digits))
             .collect();
 
         Self { stones }
     }
 
-    pub fn new(stones: Vec<Stone>) -> Self {
+    fn new(stones: Vec<Number>) -> Self {
         Self { stones }
     }
 }
@@ -122,13 +138,13 @@ mod tests {
         assert_eq!(
             collection.stones,
             vec![
-                Stone { number: 1 },
-                Stone { number: 2024 },
-                Stone { number: 1 },
-                Stone { number: 0 },
-                Stone { number: 9 },
-                Stone { number: 9 },
-                Stone { number: 2021976 }
+                Number::One,
+                Number::Value(2024, 4),
+                Number::One,
+                Number::Zero,
+                Number::Value(9, 1),
+                Number::Value(9, 1),
+                Number::Value(2021976, 7)
             ]
         );
     }
