@@ -216,4 +216,13 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn determines_arrangement_after_25_blinks_with_cache() {
+        let mut collection = NumberCollection::from_string("125 17");
+        let mut cache = NumberCache::new();
+
+        let result = collection.blink_times(25, 5.0, &mut cache);
+        assert_eq!(result, 55312);
+    }
 }
