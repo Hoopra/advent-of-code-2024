@@ -1,42 +1,22 @@
-mod stone;
-use stone::StoneCollection;
+mod cache;
+mod collection;
+mod number;
 
 use crate::util::read_input;
+use cache::NumberCache;
+use collection::NumberCollection;
 
-const STONE_CUTOFF: usize = 50000;
+pub fn arrangement_after_blinks(input: &str, blinks: u64) -> usize {
+    let mut collection = NumberCollection::from_string(input);
 
-pub fn collection_arrangement_after_blinks(
-    mut collection: StoneCollection,
-    blinks: u64,
-    total: u64,
-) -> usize {
     let mut result = 0;
 
-    for i in 0..blinks {
-        println!("blink {} / {} (total {})", i, blinks, total);
-
+    for _ in 0..blinks {
         collection.blink();
         result = collection.count();
-
-        if collection.count() >= STONE_CUTOFF {
-            let collections = collection.split();
-
-            for collection in collections {
-                result +=
-                    collection_arrangement_after_blinks(collection, blinks - i - 1, total + 2);
-            }
-
-            return result;
-        }
     }
 
     result
-}
-
-pub fn arrangement_after_blinks(input: &str, blinks: u64) -> usize {
-    let collection = StoneCollection::from_string(input);
-
-    collection_arrangement_after_blinks(collection, blinks, 0)
 }
 
 pub fn solve_part_1() -> usize {
@@ -45,8 +25,15 @@ pub fn solve_part_1() -> usize {
     arrangement_after_blinks(&input, 25)
 }
 
+pub fn arrangement_after_blinks_with_cache(input: &str, blinks: usize, steps: f64) -> usize {
+    let mut cache = NumberCache::new();
+    let mut collection = NumberCollection::from_string(input);
+
+    collection.blink_times(blinks, steps, &mut cache)
+}
+
 pub fn solve_part_2() -> usize {
     let input = read_input("src/day_11/input.txt");
 
-    arrangement_after_blinks(&input, 75)
+    arrangement_after_blinks_with_cache(&input, 75, 3.0)
 }
