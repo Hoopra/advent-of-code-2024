@@ -8,6 +8,7 @@ mod day_07;
 mod day_08;
 mod day_09;
 mod day_10;
+mod day_11;
 mod util;
 
 use std::io::stdin;
@@ -65,6 +66,10 @@ fn main() {
         10 => {
             println!("part 1: {}", day_10::solve_part_1());
             println!("part 2: {}", day_10::solve_part_2());
+        }
+        11 => {
+            println!("part 1: {}", day_11::solve_part_1());
+            println!("part 2: {}", day_11::solve_part_2());
         }
         _ => {
             println!("not yet solved");
