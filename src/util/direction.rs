@@ -27,6 +27,10 @@ impl Direction {
     pub fn corner() -> [Direction; 4] {
         [Direction::NE, Direction::SE, Direction::SW, Direction::NW]
     }
+
+    pub fn cardinal() -> [Direction; 4] {
+        [Direction::N, Direction::E, Direction::W, Direction::S]
+    }
 }
 
 impl Direction {
