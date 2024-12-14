@@ -1,3 +1,5 @@
+mod map_2d;
+
 use crate::util::read_input;
 
 pub fn solve_part_1() -> usize {
