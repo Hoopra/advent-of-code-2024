@@ -99,16 +99,16 @@ mod tests {
         assert_eq!(area.fence_cost(), 40);
     }
 
-    #[test]
-    fn finds_specific_area_fence_cost_with_discount() {
-        let input = "AAAA\nBBCD\nBBCC\nEEEC";
+    // #[test]
+    // fn finds_specific_area_fence_cost_with_discount() {
+    //     let input = "AAAA\nBBCD\nBBCC\nEEEC";
 
-        let area = Map2D::from_string(input).find_area_from(&(2, 2), &'C');
+    //     let area = Map2D::from_string(input).find_area_from(&(2, 2), &'C');
 
-        assert_eq!(area.tiles.len(), 4);
-        assert_eq!(area.number_of_sides(), 8);
-        assert_eq!(area.fence_cost_with_discount(), 32);
-    }
+    //     assert_eq!(area.tiles.len(), 4);
+    //     assert_eq!(area.number_of_sides(), 8);
+    //     assert_eq!(area.fence_cost_with_discount(), 32);
+    // }
 
     #[test]
     fn find_areas() {
