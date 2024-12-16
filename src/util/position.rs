@@ -12,3 +12,10 @@ pub fn move_steps_in_direction<'a>(
     let position = (position.0 + steps * step.0, position.1 + steps * step.1);
     position
 }
+
+pub fn distance_between(a: &Position, b: &Position) -> usize {
+    let (x_a, y_a) = a;
+    let (x_b, y_b) = b;
+
+    ((x_b - x_a).abs() + (y_b - y_a).abs()) as usize
+}

@@ -59,4 +59,17 @@ impl Direction {
             Direction::NW => Direction::NE,
         }
     }
+
+    pub fn rotate_90_degress_counter_clockwise(&self) -> Direction {
+        match self {
+            Direction::N => Direction::W,
+            Direction::NE => Direction::SW,
+            Direction::E => Direction::N,
+            Direction::SE => Direction::NE,
+            Direction::S => Direction::E,
+            Direction::SW => Direction::SE,
+            Direction::W => Direction::S,
+            Direction::NW => Direction::SW,
+        }
+    }
 }

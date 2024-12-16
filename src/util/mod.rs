@@ -6,4 +6,4 @@ mod position;
 pub use direction::Direction;
 pub use io::read_input;
 pub use number::divide_integer;
-pub use position::{move_steps_in_direction, Position};
+pub use position::{distance_between, move_steps_in_direction, Position};
