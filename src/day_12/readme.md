@@ -21,19 +21,18 @@ Visually indicating the sides of plots in each region that contribute to the per
 
 +-+-+-+-+
 |A A A A|
-+-+-+-+-+ +-+
-|D|
-+-+-+ +-+ +-+
-|B B| |C|
-
-- - - +-+
-      |B B| |C C|
-      +-+-+ +-+ +
-      |C|
-      +-+-+-+ +-+
-      |E E E|
-      +-+-+-+
-      Plants of the same type can appear in multiple separate regions, and regions can even appear within other regions. For example:
++-+-+-+-+     +-+
+              |D|
++-+-+   +-+   +-+
+|B B|   |C|
++   +   + +-+
+|B B|   |C C|
++-+-+   +-+ +
+          |C|
++-+-+-+   +-+
+|E E E|
++-+-+-+
+Plants of the same type can appear in multiple separate regions, and regions can even appear within other regions. For example:
 
 OOOOO
 OXOXO

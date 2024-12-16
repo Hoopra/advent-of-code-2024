@@ -78,7 +78,6 @@ mod tests {
         let input = "########\n#..O.O.#\n##@.O..#\n#...O..#\n#.#.O..#\n#...O..#\n#......#\n########\n\n<^^>>>v";
 
         let map = determine_arrangement_after_moves(input);
-        map.print_boxes();
 
         assert_eq!(map.get(&(5, 1)), Some(&MapFeature::Box));
         assert_eq!(map.get(&(6, 1)), Some(&MapFeature::Box));

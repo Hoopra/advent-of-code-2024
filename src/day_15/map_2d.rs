@@ -87,16 +87,4 @@ impl Map2D {
 
         result
     }
-
-    #[cfg(test)]
-    pub fn print_boxes(&self) {
-        for ((x, y), tile) in &self.tiles {
-            match tile {
-                MapFeature::Box => {
-                    println!("box at: {:?}", (x, y))
-                }
-                _ => {}
-            }
-        }
-    }
 }
