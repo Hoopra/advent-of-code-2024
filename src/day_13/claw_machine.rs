@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-
 type Coordinate = (usize, usize);
 
 pub struct ClawMachine {
@@ -98,6 +97,48 @@ impl ClawMachine {
             Some(combination) => combination_price(combination),
         }
     }
+
+    fn find_times_a(&self, times_b: u128) -> u128 {
+        let (x_a, _) = self.button_a;
+        let (x_b, _) = self.button_b;
+        let (x_p, _) = self.prize;
+
+        let numerator = (x_p as f64) - (x_b as f64) * (times_b as f64);
+
+        (numerator / (x_a as f64)).round() as u128
+    }
+
+    fn find_times_b(&self) -> u128 {
+        let (x_a, y_a) = self.button_a;
+        let (x_b, y_b) = self.button_b;
+        let (x_p, y_p) = self.prize;
+
+        let k_a = (y_a as f64) / (x_a as f64);
+        let numerator = (y_p as f64) - k_a * (x_p as f64);
+        let denominator = (y_b as f64) - k_a * (x_b as f64);
+
+        (numerator / denominator).round() as u128
+    }
+
+    pub fn calculate_best_prize_combination(&self) -> (u128, u128) {
+        let times_b = self.find_times_b();
+        let times_a = self.find_times_a(times_b);
+
+        let a = self.button_a.0 as u128;
+        let b = self.button_b.0 as u128;
+        let prize = self.prize.0 as u128;
+
+        let a_reduction = prize / a;
+        let b_increase = (a_reduction * a) / b;
+
+        println!("remove from a: {}, add to b: {}", a_reduction, b_increase);
+
+        (times_a - a_reduction, times_b + b_increase)
+    }
+
+    pub fn correct_error(&mut self) {
+        self.prize = (self.prize.0 + 10000000000000, self.prize.1 + 10000000000000)
+    }
 }
 
 #[cfg(test)]
@@ -113,5 +154,34 @@ mod tests {
         assert_eq!(machine.button_b, (22, 67));
         assert_eq!(machine.prize, (8400, 5400));
         assert_eq!(machine.lowest_token_price(), 280);
+    }
+
+    #[test]
+    fn determines_solution_base_case() {
+        let input = "Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400";
+        let machine = ClawMachine::from_string(input);
+
+        let times_b = machine.find_times_b();
+
+        assert_eq!(times_b, 40);
+        assert_eq!(machine.find_times_a(times_b), 80);
+
+        let result = machine.calculate_best_prize_combination();
+        assert_eq!(result, (80, 40));
+    }
+
+    #[test]
+    fn determines_solution_after_correction() {
+        let input = "Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400";
+        let mut machine = ClawMachine::from_string(input);
+        machine.correct_error();
+
+        let times_b = machine.find_times_b();
+
+        assert_eq!(times_b, 108108108148);
+        assert_eq!(machine.find_times_a(times_b), 81081081161);
+
+        let result = machine.calculate_best_prize_combination();
+        assert_eq!(result, (81081081161, 108108108148));
     }
 }
