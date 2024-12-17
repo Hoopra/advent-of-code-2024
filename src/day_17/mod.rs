@@ -1,7 +1,8 @@
 mod computer;
 
 use crate::util::read_input;
-use computer::Computer;
+use computer::{Computer, OutputCache};
+use std::collections::HashSet;
 
 fn find_computer_output(input: &str) -> String {
     let mut computer = Computer::from_string(input);
@@ -16,34 +17,21 @@ pub fn solve_part_1() -> String {
 
 fn find_lowest_a_register_for_copy(input: &str) -> u64 {
     let computer = Computer::from_string(input);
+    // let mut cache: OutputCache = HashSet::new();
     let mut register_a: u64 = 0;
 
     loop {
         let mut computer = computer.clone();
         computer.set_register_a(register_a as u64);
 
-        let (result, difference) = computer.is_output_copy();
-        println!("register_a: {}, difference {}", register_a, difference);
+        // let result = computer.is_output_copy(Some(&mut cache));
+        let result = computer.is_output_copy(None);
 
         if result {
             return register_a;
         }
 
-        if difference < 0 {
-            register_a -= 1;
-            continue;
-        }
-
-        register_a += match difference as u64 {
-            0 => 1,
-            value => value * 100000000,
-        };
-
-        // register_a += match difference.abs() {
-        //     value if value >= 1 => value * 100000,
-        //     value if value >= 5 => value * 100000000000,
-        //     _ => 1,
-        // };
+        register_a += 1;
     }
 }
 

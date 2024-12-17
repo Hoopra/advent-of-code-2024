@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 #[derive(Debug, Clone)]
 enum OperationType {
     DivideA,
@@ -25,6 +27,29 @@ pub struct Computer {
     program_input: String,
     program: Vec<Operation>,
 }
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct ComputerKey {
+    register_a: u64,
+    register_b: u64,
+    register_c: u64,
+    pointer: usize,
+    output: String,
+}
+
+impl ComputerKey {
+    fn new(a: u64, b: u64, c: u64, pointer: usize, output: String) -> Self {
+        Self {
+            register_a: a,
+            register_b: b,
+            register_c: c,
+            pointer,
+            output,
+        }
+    }
+}
+
+pub type OutputCache = HashSet<ComputerKey>;
 
 fn extract_register_value(input: &str) -> u64 {
     input.split(" ").last().unwrap().parse().unwrap()
@@ -97,21 +122,33 @@ fn bitwise_xor(value_a: u64, value_b: u64) -> u64 {
     value_a ^ value_b
 }
 
+fn concat_output(output: &Vec<u64>) -> String {
+    output
+        .iter()
+        .map(|value| value.to_string())
+        .collect::<Vec<String>>()
+        .join(",")
+}
+
 impl Computer {
     pub fn set_register_a(&mut self, value: u64) {
         self.register_a = value;
     }
 
-    pub fn is_output_copy(&mut self) -> (bool, isize) {
-        let output = self.output();
+    pub fn is_output_copy(&mut self, cache: Option<&mut OutputCache>) -> bool {
+        let (output, moves) = self.output_with_cache(cache.as_deref());
         let matcher = &self.program_input;
 
-        println!("out len: {}, program len: {}", output.len(), matcher.len());
+        let result = output.eq(matcher);
 
-        (
-            output.eq(matcher),
-            (matcher.len() as isize) - (output.len() as isize),
-        )
+        if !result && cache.is_some() {
+            let cache = cache.unwrap();
+            moves.into_iter().for_each(|key| {
+                cache.insert(key);
+            });
+        }
+
+        result
     }
 
     fn combo_operand(&self, operand: &u64) -> Option<u64> {
@@ -124,9 +161,10 @@ impl Computer {
         }
     }
 
-    pub fn output(&mut self) -> String {
+    pub fn output_with_cache(&mut self, cache: Option<&OutputCache>) -> (String, Vec<ComputerKey>) {
         let mut output: Vec<u64> = vec![];
         let mut pointer = 0;
+        let mut moves = vec![];
 
         while let Some(computation) = self.program.get(pointer) {
             let Operation { operation, operand } = computation;
@@ -138,6 +176,25 @@ impl Computer {
                 register_c,
                 ..
             } = self;
+
+            let key = ComputerKey::new(
+                *register_a,
+                *register_b,
+                *register_c,
+                pointer,
+                concat_output(&output),
+            );
+
+            match cache {
+                None => {}
+                Some(cache) => {
+                    if cache.contains(&key) {
+                        return (String::new(), moves);
+                    }
+                }
+            }
+
+            moves.push(key);
 
             pointer += 1;
 
@@ -158,11 +215,11 @@ impl Computer {
             }
         }
 
-        output
-            .iter()
-            .map(|value| value.to_string())
-            .collect::<Vec<String>>()
-            .join(",")
+        (concat_output(&output), moves)
+    }
+
+    pub fn output(&mut self) -> String {
+        self.output_with_cache(None).0
     }
 }
 
@@ -210,7 +267,6 @@ mod tests {
 
         assert_eq!(computer.program.len(), 3);
 
-        let result = computer.output();
-        assert_eq!(&result, "4,6,3,5,6,3,5,2,1,0")
+        assert_eq!(&computer.output(), "4,6,3,5,6,3,5,2,1,0")
     }
 }
