@@ -16,12 +16,13 @@ pub struct Operation {
     operand: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Computer {
     register_a: u64,
     register_b: u64,
     register_c: u64,
 
+    program_input: String,
     program: Vec<Operation>,
 }
 
@@ -29,41 +30,38 @@ fn extract_register_value(input: &str) -> u64 {
     input.split(" ").last().unwrap().parse().unwrap()
 }
 
-fn parse_instructions(input: &str) -> Vec<Operation> {
+fn parse_instructions(input: &str) -> (String, Vec<Operation>) {
     let mut result = vec![];
 
     let mut operation: Option<OperationType> = None;
 
-    input
-        .split(" ")
-        .last()
-        .unwrap()
-        .split(",")
-        .for_each(|input| {
-            let value = input.parse().unwrap();
-            if operation.is_some() {
-                result.push(Operation {
-                    operation: operation.clone().unwrap(),
-                    operand: value,
-                });
+    let instruction_part = input.split(" ").last().unwrap();
 
-                operation = None;
-                return;
-            }
+    instruction_part.split(",").for_each(|input| {
+        let value = input.parse().unwrap();
+        if operation.is_some() {
+            result.push(Operation {
+                operation: operation.clone().unwrap(),
+                operand: value,
+            });
 
-            operation = Some(match value {
-                0 => OperationType::DivideA,
-                1 => OperationType::BitwiseXorB,
-                2 => OperationType::Modulus,
-                3 => OperationType::Jump,
-                4 => OperationType::BitwiseXorBC,
-                5 => OperationType::Write,
-                6 => OperationType::DivideB,
-                _ => OperationType::DivideC,
-            })
-        });
+            operation = None;
+            return;
+        }
 
-    result
+        operation = Some(match value {
+            0 => OperationType::DivideA,
+            1 => OperationType::BitwiseXorB,
+            2 => OperationType::Modulus,
+            3 => OperationType::Jump,
+            4 => OperationType::BitwiseXorBC,
+            5 => OperationType::Write,
+            6 => OperationType::DivideB,
+            _ => OperationType::DivideC,
+        })
+    });
+
+    (instruction_part.to_string(), result)
 }
 
 impl Computer {
@@ -74,11 +72,14 @@ impl Computer {
         let c = lines.nth(0).unwrap();
         let instructions = lines.nth(1).unwrap();
 
+        let (program_input, program) = parse_instructions(instructions);
+
         Self {
             register_a: extract_register_value(a),
             register_b: extract_register_value(b),
             register_c: extract_register_value(c),
-            program: parse_instructions(instructions),
+            program_input,
+            program,
         }
     }
 }
@@ -97,6 +98,22 @@ fn bitwise_xor(value_a: u64, value_b: u64) -> u64 {
 }
 
 impl Computer {
+    pub fn set_register_a(&mut self, value: u64) {
+        self.register_a = value;
+    }
+
+    pub fn is_output_copy(&mut self) -> (bool, isize) {
+        let output = self.output();
+        let matcher = &self.program_input;
+
+        println!("out len: {}, program len: {}", output.len(), matcher.len());
+
+        (
+            output.eq(matcher),
+            (matcher.len() as isize) - (output.len() as isize),
+        )
+    }
+
     fn combo_operand(&self, operand: &u64) -> Option<u64> {
         match operand {
             0 | 1 | 2 | 3 => Some(*operand),
