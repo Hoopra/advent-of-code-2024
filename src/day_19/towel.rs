@@ -1,4 +1,8 @@
-use std::{cmp::Ordering, collections::BinaryHeap, fmt::Debug};
+use std::{
+    cmp::Ordering,
+    collections::{BinaryHeap, HashSet},
+    fmt::Debug,
+};
 
 use super::towel_stripe::TowelStripe;
 
@@ -60,15 +64,15 @@ impl Towel {
 }
 
 fn stripes_match(a: &[TowelStripe], b: &Vec<&TowelStripe>) -> bool {
-    if a.len() != b.len() {
-        return false;
-    }
+    // if a.len() != b.len() {
+    //     return false;
+    // }
 
     a.iter().enumerate().all(|(i, stripe)| {
         let target = b.get(i);
         match target {
-            None => false,
             Some(target) => target == &stripe,
+            _ => true,
         }
     })
 }
@@ -77,7 +81,8 @@ fn find_relevant<'a>(available: &[Towel], target: &[TowelStripe], skip: usize) -
     available
         .iter()
         .filter_map(|towel| {
-            let target = target.iter().skip(skip).take(towel.stripes.len()).collect();
+            let target: Vec<&TowelStripe> = target.iter().skip(skip).collect();
+            // target.iter().skip(skip).take(towel.stripes.len()).collect();
 
             match stripes_match(&towel.stripes, &target) {
                 true => Some(towel.clone()),
@@ -85,46 +90,6 @@ fn find_relevant<'a>(available: &[Towel], target: &[TowelStripe], skip: usize) -
             }
         })
         .collect()
-}
-
-fn try_combinations(
-    desired: &[TowelStripe],
-    current: &[TowelStripe],
-    available: &[&Towel],
-) -> bool {
-    match current.len().cmp(&desired.len()) {
-        Ordering::Equal => {
-            let is_match = stripes_match(current, &desired.iter().take(current.len()).collect());
-
-            println!("same length, match: {}", is_match);
-            return is_match;
-        }
-        Ordering::Less => {}
-        _ => {
-            return {
-                println!("too long");
-                false
-            }
-        }
-    }
-
-    available.iter().any(|towel| {
-        if !stripes_match(
-            &towel.stripes,
-            &desired
-                .iter()
-                .skip(current.len())
-                .take(towel.stripes.len())
-                .collect(),
-        ) {
-            return false;
-        }
-
-        let mut new_current: Vec<TowelStripe> = current.to_vec();
-        new_current.extend(towel.stripes.clone());
-
-        try_combinations(desired, &new_current, available)
-    })
 }
 
 pub fn towel_combinations_from_string(input: &str) -> (Vec<Towel>, Vec<Towel>) {
@@ -138,24 +103,42 @@ pub fn towel_combinations_from_string(input: &str) -> (Vec<Towel>, Vec<Towel>) {
 
 impl Towel {
     pub fn is_combination_possible(&self, available: &Vec<Towel>) -> bool {
-        let Towel { stripes: desired } = self;
-        let target = Towel::new(desired.to_vec());
+        let Towel {
+            stripes: desired, ..
+        } = self;
 
-        let mut queue: BinaryHeap<Towel> = BinaryHeap::from(find_relevant(available, &desired, 0));
+        let mut checked: HashSet<Towel> = HashSet::new();
+
+        let start_nodes = find_relevant(available, &desired, 0);
+        let mut queue: BinaryHeap<Towel> = BinaryHeap::from(start_nodes);
 
         while let Some(next) = queue.pop() {
-            println!("next    {:?}", next);
-            println!("target: {:?}", target);
-
-            let Towel { stripes } = next;
+            let Towel { stripes } = &next;
             let relevant = find_relevant(available, &desired, stripes.len());
 
-            for towel in relevant {
-                let mut stripes = stripes.clone();
-                stripes.extend(towel.stripes);
+            // if relevant.len() == 0 {
+            //     checked.insert(next.clone());
+            // }
 
-                if stripes.len() == desired.len() {
-                    return true;
+            for towel in relevant {
+                if checked.contains(&towel) {
+                    continue;
+                }
+
+                let mut stripes = stripes.clone();
+                // println!("stripes.len before {} / {}", stripes.len(), desired.len());
+                stripes.extend(towel.stripes.clone());
+                // println!("stripes.len after {} / {}", stripes.len(), desired.len());
+
+                match stripes.len().cmp(&desired.len()) {
+                    Ordering::Equal => return true,
+                    Ordering::Greater => {
+                        // println!("too many stripes!");
+                        checked.insert(towel.clone());
+                    }
+                    Ordering::Less => {
+                        // println!("too few stripes!");
+                    }
                 }
 
                 queue.push(Towel::new(stripes));
@@ -163,14 +146,6 @@ impl Towel {
         }
 
         false
-        // let current: Vec<TowelStripe> = vec![];
-
-        // let relevant: Vec<&Towel> = available
-        //     .into_iter()
-        //     .filter(|towel| !towel.stripes.iter().any(|stripe| !desired.contains(stripe)))
-        //     .collect();
-
-        // try_combinations(&desired, &current, &relevant)
     }
 }
 
@@ -189,6 +164,6 @@ mod tests {
             .first()
             .unwrap()
             .is_combination_possible(&available);
-        assert_eq!(result, true);
+        assert_eq!(result, false);
     }
 }
