@@ -1,8 +1,22 @@
 mod robot;
 
+use crate::util::{read_input, Position};
 use robot::Robot;
+use std::collections::HashSet;
 
-use crate::util::read_input;
+fn print_map(space: (isize, isize), robot_positions: HashSet<Position>) {
+    println!("");
+
+    for y in 0..=space.1 {
+        println!("");
+        for x in 0..=space.0 {
+            match robot_positions.contains(&(x, y)) {
+                true => print!("#"),
+                false => print!("."),
+            }
+        }
+    }
+}
 
 fn find_safety_score(input: &str, space: (isize, isize), times: usize) -> usize {
     let quadrant_counts = input
@@ -35,10 +49,56 @@ pub fn solve_part_1() -> usize {
     find_safety_score(&input, (101, 103), 100)
 }
 
-pub fn solve_part_2() -> usize {
-    let _input = read_input("src/day_14/input.txt");
+fn are_positions_lined_up(positions: &HashSet<Position>, line_length: usize) -> bool {
+    let mut length = 0;
 
-    0
+    for (x_0, y) in positions {
+        let mut x = x_0 + 1;
+        while positions.contains(&(x, *y)) {
+            x += 1;
+            length += 1;
+        }
+
+        if (length + 1) >= line_length {
+            return true;
+        }
+
+        length = 0;
+    }
+
+    false
+}
+
+fn find_moves_for_easter_egg(input: &str, space: (isize, isize)) -> usize {
+    let mut robots: Vec<Robot> = input.lines().map(|text| Robot::from_string(text)).collect();
+
+    let mut robot_references: Vec<&mut Robot> = robots.iter_mut().collect();
+    let mut positions: HashSet<Position> = HashSet::new();
+    let mut times = 0;
+
+    loop {
+        positions.clear();
+        times += 1;
+
+        for robot in robot_references.iter_mut() {
+            robot.move_times(space, 1);
+            positions.insert(robot.position);
+        }
+
+        if are_positions_lined_up(&positions, 10) {
+            break;
+        }
+    }
+
+    print_map(space, positions);
+
+    times
+}
+
+pub fn solve_part_2() -> usize {
+    let input = read_input("src/day_14/input.txt");
+
+    find_moves_for_easter_egg(&input, (101, 103))
 }
 
 #[cfg(test)]
