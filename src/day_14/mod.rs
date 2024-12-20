@@ -73,24 +73,25 @@ fn find_moves_for_easter_egg(input: &str, space: (isize, isize)) -> usize {
     let mut robots: Vec<Robot> = input.lines().map(|text| Robot::from_string(text)).collect();
 
     let mut robot_references: Vec<&mut Robot> = robots.iter_mut().collect();
-    let mut positions: HashSet<Position> = HashSet::new();
     let mut times = 0;
 
     loop {
-        positions.clear();
         times += 1;
 
         for robot in robot_references.iter_mut() {
             robot.move_times(space, 1);
-            positions.insert(robot.position);
         }
 
+        let positions = robot_references
+            .iter()
+            .map(|robot| robot.position)
+            .collect();
+
         if are_positions_lined_up(&positions, 10) {
+            print_map(space, positions);
             break;
         }
     }
-
-    print_map(space, positions);
 
     times
 }
