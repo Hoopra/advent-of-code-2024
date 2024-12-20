@@ -16,7 +16,7 @@ pub fn solve_part_1() -> String {
 }
 
 pub fn solve_part_2() -> u128 {
-    let input = read_input("src/day_13/input.txt");
+    let input = read_input("src/day_17/input.txt");
 
     0
 }
