@@ -26,6 +26,7 @@ Prize: X=7870, Y=6450
 Button A: X+69, Y+23
 Button B: X+27, Y+71
 Prize: X=18641, Y=10279
+
 This list describes the button configuration and prize location of four different claw machines.
 
 For now, consider just the first claw machine in the list:
@@ -65,6 +66,7 @@ Prize: X=10000000007870, Y=10000000006450
 Button A: X+69, Y+23
 Button B: X+27, Y+71
 Prize: X=10000000018641, Y=10000000010279
+
 Now, it is only possible to win a prize on the second and fourth claw machines. Unfortunately, it will take many more than 100 presses to do so.
 
 Using the corrected prize coordinates, figure out how to win as many prizes as possible. What is the fewest tokens you would have to spend to win all possible prizes?

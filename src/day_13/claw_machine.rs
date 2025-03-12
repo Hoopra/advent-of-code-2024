@@ -1,35 +1,12 @@
-use std::cmp::Ordering;
-
-type Coordinate = (usize, usize);
+use super::{
+    linear_algebra::solve_2n_order_system,
+    model::{text_to_button, text_to_prize, Coordinate},
+};
 
 pub struct ClawMachine {
     button_a: Coordinate,
     button_b: Coordinate,
     prize: Coordinate,
-}
-
-fn text_to_button(input: &str) -> Coordinate {
-    let next: String = input.chars().skip(10).collect();
-    let entries: Vec<&str> = next.split(", ").collect();
-
-    (
-        text_to_coordinate(&entries.get(0).unwrap()),
-        text_to_coordinate(&entries.get(1).unwrap()),
-    )
-}
-
-fn text_to_coordinate(input: &str) -> usize {
-    input.chars().skip(2).collect::<String>().parse().unwrap()
-}
-
-fn text_to_prize(input: &str) -> Coordinate {
-    let next: String = input.chars().skip(7).collect();
-    let entries: Vec<&str> = next.split(", ").collect();
-
-    (
-        text_to_coordinate(&entries.get(0).unwrap()),
-        text_to_coordinate(&entries.get(1).unwrap()),
-    )
 }
 
 impl ClawMachine {
@@ -44,59 +21,23 @@ impl ClawMachine {
     }
 }
 
-fn is_valid_combination(a: usize, times_a: usize, b: usize, times_b: usize, target: usize) -> bool {
-    if times_a > 100 || times_b > 100 {
-        return false;
-    }
-
-    a * times_a + b * times_b == target
-}
-
-fn combinations(a: usize, b: usize, p: usize) -> Vec<(usize, usize)> {
-    let mut result = vec![];
-
-    for times_a in 0..100 {
-        for times_b in 0..100 {
-            let combination = (times_a, times_b);
-            if is_valid_combination(a, combination.0, b, combination.1, p) {
-                result.push(combination);
-            }
-        }
-    }
-
-    result
-}
-
-fn combination_price(a: &(usize, usize)) -> usize {
+fn combination_price(a: &Coordinate) -> i64 {
     a.0 * 3 + a.1 * 1
 }
 
-fn compare_button_presses(a: &(usize, usize), b: &(usize, usize)) -> Ordering {
-    combination_price(a).cmp(&combination_price(b))
-}
-
 impl ClawMachine {
-    fn combinations_x(&self) -> Vec<(usize, usize)> {
-        combinations(self.button_a.0, self.button_b.0, self.prize.0)
+    pub fn add_prize(&mut self, add: i64) {
+        self.prize = (self.prize.0 + add, self.prize.1 + add);
     }
 
-    fn combinations_y(&self) -> Vec<(usize, usize)> {
-        combinations(self.button_a.1, self.button_b.1, self.prize.1)
-    }
+    pub fn lowest_token_price(&self) -> i64 {
+        let (a1, a2) = self.button_a;
+        let (b1, b2) = self.button_b;
 
-    pub fn lowest_token_price(&self) -> usize {
-        let combinations_x = self.combinations_x();
-        let combinations_y = self.combinations_y();
+        let matrix = [(a1, b1), (a2, b2)];
+        let result = solve_2n_order_system(&matrix, &self.prize);
 
-        let combination = combinations_x
-            .iter()
-            .filter(|combination| combinations_y.contains(combination))
-            .min_by(|a, b| compare_button_presses(a, b));
-
-        match combination {
-            None => 0,
-            Some(combination) => combination_price(combination),
-        }
+        combination_price(&result)
     }
 }
 
@@ -113,5 +54,15 @@ mod tests {
         assert_eq!(machine.button_b, (22, 67));
         assert_eq!(machine.prize, (8400, 5400));
         assert_eq!(machine.lowest_token_price(), 280);
+
+        let input = "Button A: X+26, Y+66\nButton B: X+67, Y+21\nPrize: X=12748, Y=12176";
+        let machine = ClawMachine::from_string(input);
+
+        assert_eq!(machine.lowest_token_price(), 0);
+
+        let input = "Button A: X+69, Y+23\nButton B: X+27, Y+71\nPrize: X=18641, Y=10279";
+        let machine = ClawMachine::from_string(input);
+
+        assert_eq!(machine.lowest_token_price(), 0);
     }
 }
