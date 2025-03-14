@@ -1,9 +1,11 @@
 use crate::util::{move_steps_in_direction, Direction, Position};
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum MapFeature {
     Box,
+    BoxLeft,
+    BoxRight,
     Empty,
     Wall,
 }
@@ -30,6 +32,8 @@ impl Map2D {
                         start = (x, y);
                         MapFeature::Empty
                     }
+                    '[' => MapFeature::BoxLeft,
+                    ']' => MapFeature::BoxRight,
                     _ => MapFeature::Empty,
                 };
 
@@ -46,6 +50,14 @@ impl Map2D {
         self.tiles.get(position)
     }
 
+    pub fn get_tiles(&self) -> &HashMap<Position, MapFeature> {
+        &self.tiles
+    }
+
+    pub fn set_tiles(&mut self, tiles: HashMap<Position, MapFeature>) {
+        self.tiles = tiles;
+    }
+
     pub fn find_empty_in_direction(
         &self,
         position: &Position,
@@ -60,17 +72,25 @@ impl Map2D {
             match tile {
                 None => return None,
                 Some(some) => match some {
-                    MapFeature::Box => {}
                     MapFeature::Empty => return Some(position),
                     MapFeature::Wall => return None,
+                    _ => {}
                 },
             }
         }
     }
 
     pub fn move_box(&mut self, from: &Position, to: &Position) {
-        self.tiles.insert(*from, MapFeature::Empty);
-        self.tiles.insert(*to, MapFeature::Box);
+        let from_box = self.tiles.get(from).unwrap();
+
+        match from_box {
+            MapFeature::Box => {
+                self.tiles.insert(*from, MapFeature::Empty);
+                self.tiles.insert(*to, MapFeature::Box);
+            }
+            MapFeature::BoxLeft | MapFeature::BoxRight => {}
+            _ => {}
+        }
     }
 
     pub fn sum_box_coordinates(&self) -> usize {
@@ -78,7 +98,7 @@ impl Map2D {
 
         for ((x, y), tile) in &self.tiles {
             match tile {
-                MapFeature::Box => {
+                MapFeature::Box | MapFeature::BoxLeft => {
                     result += ((y * 100) + x) as usize;
                 }
                 _ => {}

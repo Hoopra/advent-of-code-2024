@@ -264,6 +264,7 @@ The larger example from before would now look like this:
 ##..[][]..[]..[][]##
 ##........[]......##
 ####################
+
 Because boxes are now twice as wide but the robot is still the same size and speed, boxes can be aligned such that they directly push two other boxes at once. For example, consider this situation:
 
 #######
@@ -384,11 +385,13 @@ Move ^:
 ##..........##
 ##..........##
 ##############
+
 This warehouse also uses GPS to locate the boxes. For these larger boxes, distances are measured from the edge of the map to the closest edge of the box in question. So, the box shown below has a distance of 1 from the top edge of the map and 5 from the left edge of the map, resulting in a GPS coordinate of 100 * 1 + 5 = 105.
 
 ##########
 ##...[]...
 ##........
+
 In the scaled-up version of the larger example from above, after the robot has finished all of its moves, the warehouse would look like this:
 
 ####################
@@ -401,6 +404,7 @@ In the scaled-up version of the larger example from above, after the robot has f
 ##..@......[].[][]##
 ##......[][]..[]..##
 ####################
+
 The sum of these boxes' GPS coordinates is 9021.
 
 Predict the motion of the robot and boxes in this new, scaled-up warehouse. What is the sum of all boxes' final GPS coordinates?
